@@ -13,7 +13,6 @@
 #include <utility>
 #include <set>
 
-
 /**
  * class representing a sudoku solver.
  */
@@ -83,6 +82,8 @@ private:
     Field field;
 };
 
+constexpr SudokuSolver::Coordinates SudokuSolver::INVALID_FIELD;
+bool operator==(const SudokuSolver::Coordinates& lhs, const SudokuSolver::Coordinates& rhs);
 std::ostream& operator<<(std::ostream& os, const SudokuSolver::Field& field);
 
 #endif //SUDOKU_SUDOKUSOLVER_H

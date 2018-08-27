@@ -16,7 +16,7 @@ void SudokuSolver::initialize(const std::string &inputString) {
 }
 
 void SudokuSolver::checkInputSanity(const std::string &input) const {
-    if(input.length() != 81) {
+    if(input.length() != NO_OF_ROWS * NO_OF_COLS) {
         throw std::runtime_error("input string must have length 81");
     }
     if (!std::all_of(input.begin(), input.end(), ::isdigit)) {
@@ -58,7 +58,7 @@ std::set<int> SudokuSolver::valuesInRow(int row) const {
     return rowValues;
 }
 
-std::set<int> SudokuSolver::valuesInSubfield(const SudokuSolver::Coordinates& coordinates) const {
+std::set<int> SudokuSolver::valuesInSubfield(const Coordinates& coordinates) const {
     auto lowerBound = [](int value) { return SUBFIELD_LENGTH * (value / SUBFIELD_LENGTH); };
     auto upperBound = [lowerBound](int value) { return lowerBound(value) + SUBFIELD_LENGTH; };
     std::set<int> fieldValues;
@@ -95,7 +95,7 @@ std::set<int> SudokuSolver::optionsAt(const SudokuSolver::Coordinates &coordinat
 
 bool SudokuSolver::solve() {
     const Coordinates next = nextField();
-    if (next.col == -1)
+    if (next == INVALID_FIELD)
         return true;
     std::set<int> options = optionsAt(next);
     if (options.size() == 0) {
@@ -111,6 +111,11 @@ bool SudokuSolver::solve() {
     }
     valueAt(next.row, next.col) = NOT_SET;
     return false;
+}
+
+
+bool operator==(const SudokuSolver::Coordinates& lhs, const SudokuSolver::Coordinates& rhs) {
+    return lhs.row == rhs.row && lhs.col == rhs.col;
 }
 
 
