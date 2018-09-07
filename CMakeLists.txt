@@ -4,7 +4,13 @@ project(sudoku)
 
 include_directories(BEFORE include)
 FILE(GLOB_RECURSE myfiles  src/*.cpp)
-add_executable(main ${myfiles})
+list(FILTER myfiles EXCLUDE REGEX ".*/main_fast.cpp" )
+list(FILTER myfiles EXCLUDE REGEX ".*/main_slow.cpp" )
+message("source files: ")
+message(${myfiles})
+add_executable(fast ${myfiles} src/main_fast.cpp)
+add_executable(slow ${myfiles} src/main_slow.cpp)
+
 
 
 enable_testing()
