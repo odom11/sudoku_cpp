@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 #include <set>
+#include <array>
 
 /**
  * class representing a sudoku solver.
@@ -21,14 +22,16 @@ public:
     virtual ~SudokuSolver() {};
     using Coordinates = struct {int row; int col;};
     constexpr static Coordinates INVALID_FIELD = {-1, -1};
-    const static int NO_OF_ROWS = 9;
-    const static int NO_OF_COLS = 9;
+    constexpr static int NO_OF_ROWS = 9;
+    constexpr static int NO_OF_COLS = 9;
+    constexpr static int MAX_DISTINCT_VALUES = 9;
+    using array = std::array<int, MAX_DISTINCT_VALUES>;
     struct Field {
         int values[NO_OF_ROWS][NO_OF_COLS];
     };
 
-    const static int SUBFIELD_LENGTH = 3;
-    const static int NOT_SET = 0;
+    constexpr static int SUBFIELD_LENGTH = 3;
+    constexpr static int NOT_SET = 0;
 
     /**
      * initializes sudoku from digits.
@@ -59,16 +62,17 @@ public:
      * @param coordinates coordinates.
      * @return set with values.
      */
-    std::set<int> optionsAt(const Coordinates& coordinates) const;
+    //std::set<int> optionsAt(const Coordinates& coordinates) const;
+    std::pair<array, int> optionsAt(const Coordinates& coordinates) const;
     /**
      * solve this f***ing thing.
      * @return true if the method succeeded, else false.
      */
     bool solve();
 private:
-    std::set<int> valuesInRow(int row) const;
-    std::set<int> valuesInCol(int col) const;
-    std::set<int> valuesInSubfield(const Coordinates& coordinates) const;
+    array valuesInRow(int row) const;
+    array valuesInCol(int col) const;
+    array valuesInSubfield(const Coordinates& coordinates) const;
     /**
      * checks if an input string satisfies criteria for setting up a sudoku.
      * @param input inputstring.

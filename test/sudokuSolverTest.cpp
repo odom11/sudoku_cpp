@@ -9,6 +9,7 @@
 
 #include <SudokuSolver.h>
 
+inline bool arrayContains(const SudokuSolver::array& array, int upTo, int item);
 BOOST_AUTO_TEST_SUITE(SudokuSolverTest)
     BOOST_AUTO_TEST_CASE(testInitializeFailOnTooShortInput) {
         SudokuSolver solver;
@@ -40,9 +41,9 @@ BOOST_AUTO_TEST_SUITE(SudokuSolverTest)
         solver.initialize(testString);
         auto field = solver.getField();
         std::cout<<field << std::endl;
-        std::set<int> optionsAt7x7 = solver.optionsAt({7, 7});
-        BOOST_CHECK_EQUAL(optionsAt7x7.size(), 1);
-        BOOST_ASSERT(optionsAt7x7.find(3) != optionsAt7x7.end());
+        std::pair<SudokuSolver::array, int> optionsAt7x7 = solver.optionsAt({7, 7});
+        BOOST_CHECK_EQUAL(optionsAt7x7.second, 1);
+        BOOST_ASSERT(arrayContains(optionsAt7x7.first, optionsAt7x7.second, 3));
     }
 
     BOOST_AUTO_TEST_CASE(testSolve) {

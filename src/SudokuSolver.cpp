@@ -5,6 +5,11 @@
 
 #include <SudokuSolver.h>
 
+inline bool arrayContains(const SudokuSolver::array& array, int upTo, int item) {
+    auto end = array.begin() + upTo;
+    return std::find(array.begin(), end, item) != end;
+}
+
 void SudokuSolver::initialize(const std::string &inputString) {
     checkInputSanity(inputString);
     int index = 0;
@@ -40,34 +45,34 @@ const SudokuSolver::Coordinates SudokuSolver::nextField() const{
     return INVALID_FIELD;
 }
 
-std::set<int> SudokuSolver::valuesInCol(int col) const {
-    std::set<int> columnValues;
+SudokuSolver::array SudokuSolver::valuesInCol(int col) const {
+    array columnValues;
     for(int row = 0; row < NO_OF_ROWS; ++row) {
-        if (valueAt(row, col) != 0)
-            columnValues.insert(valueAt(row, col));
+        columnValues[row] = valueAt(row, col);
     }
     return columnValues;
 }
 
-std::set<int> SudokuSolver::valuesInRow(int row) const {
-    std::set<int> rowValues;
+SudokuSolver::array SudokuSolver::valuesInRow(int row) const {
+    array rowValues;
     for(int col = 0; col < NO_OF_ROWS; ++col) {
-        if (valueAt(row, col) != NOT_SET)
-            rowValues.insert(valueAt(row, col));
+        rowValues[col] = valueAt(row, col);
     }
     return rowValues;
 }
 
-std::set<int> SudokuSolver::valuesInSubfield(const Coordinates& coordinates) const {
+SudokuSolver::array SudokuSolver::valuesInSubfield(const Coordinates& coordinates) const {
     auto lowerBound = [](int value) { return SUBFIELD_LENGTH * (value / SUBFIELD_LENGTH); };
     auto upperBound = [lowerBound](int value) { return lowerBound(value) + SUBFIELD_LENGTH; };
-    std::set<int> fieldValues;
+    array fieldValues;
+    int index = 0;
     for (int row = lowerBound(coordinates.row); row < upperBound(coordinates.row); ++row) {
         for (int col = lowerBound(coordinates.col); col < upperBound(coordinates.col); ++col) {
-            if (valueAt(row, col ) != NOT_SET)
-                fieldValues.insert(valueAt(row, col));
+            if (valueAt(row, col ) != NOT_SET && !arrayContains(fieldValues, index, valueAt(row, col)))
+                fieldValues[index++] = valueAt(row, col);
         }
     }
+    std::fill(fieldValues.begin() + index, fieldValues.end(), SudokuSolver::NOT_SET);
     return fieldValues;
 }
 
@@ -79,31 +84,38 @@ const int SudokuSolver::valueAt(int row, int col) const {
     return field.values[row][col];
 }
 
-std::set<int> SudokuSolver::optionsAt(const SudokuSolver::Coordinates &coordinates) const {
-    auto contains = [] (const std::set<int>& container, int value) {return container.find(value) != container.end();};
+std::pair<SudokuSolver::array, int> SudokuSolver::optionsAt(const SudokuSolver::Coordinates &coordinates) const {
     auto rowElements = valuesInRow(coordinates.row);
     auto colElements = valuesInCol(coordinates.col);
     auto fieldElements = valuesInSubfield(coordinates);
-    std::set<int> possibleValues;
+    array possibleValues;
+    int index = 0;
     for (int candidate = 1; candidate < 10; ++candidate) {
-        if(!contains(rowElements, candidate) && !contains(colElements, candidate) && !contains(fieldElements, candidate)) {
-            possibleValues.insert(candidate);
+        if(
+                !arrayContains(rowElements, MAX_DISTINCT_VALUES, candidate) &&
+                !arrayContains(colElements, MAX_DISTINCT_VALUES, candidate) &&
+                !arrayContains(fieldElements, MAX_DISTINCT_VALUES, candidate)) {
+            possibleValues[index++] = candidate;
         }
     }
-    return possibleValues;
+    return std::pair<array, int>(possibleValues, index);
 }
 
 bool SudokuSolver::solve() {
     const Coordinates next = nextField();
     if (next == INVALID_FIELD)
         return true;
-    std::set<int> options = optionsAt(next);
-    if (options.size() == 0) {
+    std::pair<array, int> option = optionsAt(next);
+    enum optionMembers {
+        values = 0,
+        noOfOptions = 1
+    };
+    if (std::get<noOfOptions>(option) == 0) {
         return false;
     }
 
-    for (int option : options) {
-        valueAt(next.row, next.col) = option;
+    for (int index = 0; index < std::get<noOfOptions>(option); ++index) {
+        valueAt(next.row, next.col) = std::get<values>(option)[index];
         bool success = solve();
         if (success) {
             return true;
