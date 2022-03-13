@@ -22,6 +22,4 @@ in the commandline
 - there MUST be 81 numbers in the file
 
 ## License
-MIT (feel frree to alter, redistribute and flame)
-## Author
-yeah, right ... like I am putting my real name here
+MIT 
